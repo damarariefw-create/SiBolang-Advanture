@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { getSupabase } from '@/lib/supabase/client';
+import { requireSupabase } from '@/lib/supabase/client';
 
 interface LobbyProps {
   onJoinRoom: (roomCode: string, playerName: string, playerId: string, roomId: string) => void;
@@ -13,7 +13,7 @@ export default function Lobby({ onJoinRoom }: LobbyProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const supabase = getSupabase();
+  const supabase = requireSupabase();
 
   const handleCreateRoom = async () => {
     if (!playerName.trim()) {

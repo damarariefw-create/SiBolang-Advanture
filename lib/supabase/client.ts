@@ -7,15 +7,25 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let client: SupabaseClient | null = null;
 
-export function getSupabase(): SupabaseClient {
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  return Boolean(
+    url &&
+    publishableKey &&
+    publishableKey !== 'your_publishable_key_here'
+  );
+}
+
+export function getSupabase(): SupabaseClient | null {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
   if (!client) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !publishableKey) {
-      throw new Error(
-        'Supabase env belum diisi. Salin .env.example -> .env.local lalu restart dev server.',
-      );
-    }
+    if (!url || !publishableKey) return null;
+
     client = createClient(url, publishableKey, {
       auth: { persistSession: true, autoRefreshToken: true },
       realtime: { params: { eventsPerSecond: 10 } },
@@ -23,3 +33,14 @@ export function getSupabase(): SupabaseClient {
   }
   return client;
 }
+
+export function requireSupabase(): SupabaseClient {
+  const supabase = getSupabase();
+  if (!supabase) {
+    throw new Error(
+      'Supabase env belum diisi. Pastikan NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY telah diatur di .env.local atau Vercel Environment Variables.',
+    );
+  }
+  return supabase;
+}
+
